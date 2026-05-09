@@ -18,23 +18,38 @@ Las pruebas de integración y respuesta activa se están desarrollando sobre un 
 * **Red Team / Threat Hunting:** Kali Linux.
 * **Core del SOAR:** Python 3 (Flask, SQLite, APScheduler).
 
-## ✨ Capacidades Desarrolladas (Hasta la fecha)
+## ✨ Capacidades Desarrolladas (Core Engine)
 
-1.  **Motor de Playbooks YAML Desacoplado:** El "cerebro" del SOAR evalúa alertas entrantes sin código *hardcodeado*, permitiendo crear reglas de respuesta modificando simples archivos de texto.
-2.  **Respuesta Activa en Endpoints (EDR):** Aislamiento automático de hosts comprometidos manipulando las reglas del Firewall de Windows a través de la API nativa de Wazuh (Ej: Contención de Ransomware).
-3.  **Threat Intelligence Multiplexer:** Auto-enriquecimiento de IPs consultando de forma simultánea APIs de VirusTotal, AbuseIPDB y AlienVault OTX.
-4.  **Case Management & Ticketing:** Dashboard web en tiempo real para visualizar incidentes, métricas CTI y liberar cuarentenas con un solo clic.
-5.  **ChatOps y Human-in-the-Loop:** Integración bidireccional con un Bot de Telegram. El SOAR notifica bloqueos autónomos y solicita autorización humana para comportamientos dudosos.
-6.  **Pipeline Anti-Phishing (En memoria):** Extracción de IOCs (URLs y Hashes) de buzones de reporte trabajando directamente en memoria RAM para evitar infecciones del propio sistema.
-7. **Cyber Deception & Active Defense (Honeytokens):** Implementación de una capa de engaño mediante archivos señuelo estratégicamente situados en Windows Server 2022. La telemetría se basa en la auditoría avanzada de objetos del SO (SACLs), permitiendo al SOAR detectar y aislar intrusos en fases tempranas de reconocimiento (Táctica MITRE Discovery).
-8. **EDR Active Response (Process Termination):** Interrupción en tiempo real de binarios maliciosos. El SOAR analiza la telemetría de ejecución de procesos y, ante un IoC confirmado, instruye al agente EDR para aniquilar el proceso (kill process) a nivel de sistema operativo en milisegundos.
+**🛡️ Seguridad Perimetral y de Red (FortiGate)**
+* **Contención Dinámica en Firewall:** Integración vía API REST para inyectar *Address Objects* en Blacklists. Bloqueo autónomo del perímetro ante intentos de intrusión externa.
+* **Deduplicación de Estado:** El motor analiza el estado de la red antes de actuar, ignorando alertas concurrentes si la IP ya está bloqueada, protegiendo al Firewall de ataques de denegación de servicio (DoS) internos.
+
+**💻 Seguridad de Endpoints (Wazuh EDR & Windows)**
+* **Aislamiento de Red con "Lifeline":** Ante comportamientos Zero-Day, se despliegan scripts en PowerShell que reconfiguran el Firewall de Windows aislando el host, pero manteniendo un túnel WinRM/API abierto hacia la IP del SOC para preservar la telemetría y respuesta remota.
+* **Terminación de Procesos en Memoria:** Interrupción en tiempo real de binarios maliciosos (kill process) a nivel de SO tras confirmar un IoC.
+
+**🔐 Gestión de Identidades (Active Directory)**
+* **Contención de Cuentas Comprometidas:** Deshabilitación de identidades en tiempo real vía WinRM.
+* **Arquitectura PoLP (Principio de Mínimo Privilegio):** Ejecución a través de una cuenta de servicio dedicada (`svc_opensentry`) con delegación granular sobre el atributo `userAccountControl` y restricción de descriptores de seguridad (SDDL), evitando el uso de cuentas Domain Admin.
+
+**🕵️‍♂️ Threat Intelligence & Cyber Deception**
+* **CTI Multiplexer & Auto-Enriquecimiento:** Consulta simultánea a APIs externas (VirusTotal, AbuseIPDB, AlienVault OTX) para nutrir el ticket con OSINT, geolocalización e ISP de los atacantes.
+* **Honeytokens (Defensa Activa):** Archivos señuelo monitorizados vía FIM y SACLs de Windows. El acceso no autorizado dispara alertas MITRE T1083 (Discovery) que el SOAR contiene de inmediato.
+
+**⚙️ Operaciones SOC (Case Management)**
+* **Retención Dinámica (Auto-Cuarentenas):** Cronjobs sobre base de datos SQLite para purgar cuarentenas basándose en políticas de riesgo: Escáneres (4h), Malware/C2 (24h), Movimiento Lateral (Bloqueo Indefinido).
+* **Escudo Fail-Safe (Whitelisting):** Mecanismo de lista blanca con soporte de rangos CIDR para abortar contenciones que afecten a la subred de gestión o servidores críticos.
+* **Motor de Playbooks YAML Desacoplado:** Arquitectura "codeless" para el analista L1. Las reglas de respuesta se definen modificando simples archivos de texto.
+* **ChatOps (Human-in-the-loop):** Integración con Telegram para notificaciones ricas y solicitud de autorización en acciones críticas.
+
 
 ## 🚀 Pruebas de Concepto (PoC) Exitosas
-- [x] Intercepción de ataque Ransomware simulado (borrado de *Shadow Copies* vía `vssadmin`).
-- [x] Ejecución de script de cuarentena PowerShell a través del agente EDR.
-- [x] Corte total de conectividad de red del atacante manteniendo la telemetría viva con el SIEM.
-- [x] Despliegue de Honeytokens con monitorización FIM y auditoría de acceso a objetos en Windows.
-- [x] Detección y terminación automática de procesos maliciosos en memoria a través de PowerShell gestionado por el EDR.
+- [x] Bloqueo perimetral automático (FortiGate) de atacantes externos simulando fuerza bruta SSH.
+- [x] Intercepción de ataque Ransomware (Zero-Day mapping) vía reglas Sysmon Regex detectando destrucción de *Shadow Copies* (`vssadmin`).
+- [x] Aislamiento de host comprometido en milisegundos manteniendo el túnel de monitorización del SIEM.
+- [x] Suspensión de cuenta de usuario en el Domain Controller mediante WinRM con cuenta de servicio de mínimos privilegios.
+- [x] Despliegue de Honeytokens con auditoría avanzada de acceso a objetos y respuesta autónoma.
+- [x] Auto-resolución y clasificación de correos de Phishing trabajando la evidencia directamente en memoria RAM.
 
 ![Terminal Containment](images/consola.png)
 
@@ -42,9 +57,9 @@ Las pruebas de integración y respuesta activa se están desarrollando sobre un 
 *Demostración de Respuesta Activa: Aislamiento de red automático tras alerta crítica.*
 
 ## 🗺️ Roadmap Futuro
-- [ ] Refactorización del módulo Anti-Phishing para integrarlo al motor YAML.
-- [ ] Integración de un Gestor de Secretos Enterprise (HashiCorp Vault / Infisical) para proteger las API Keys.
-- [ ] Implementación de Cyber Deception (Honeytokens) vinculados al SOAR.
+- [ ] **Bóveda de Secretos Enterprise:** Migración de credenciales de texto plano a HashiCorp Vault para integración DevSecOps.
+- [ ] **Despliegue Contenerizado:** Creación de un `docker-compose.yml` para aislar el motor Python, la base de datos y los cronjobs en contenedores independientes.
+- [ ] **Threat Intelligence Sharing:** Integración con MISP (Malware Information Sharing Platform) para compartir IOCs neutralizados con la comunidad.
 
 ---
 *Nota: El código fuente se publicará de forma progresiva a medida que los módulos superen la fase de pruebas y se implementen medidas de seguridad para los secretos de la aplicación.*
