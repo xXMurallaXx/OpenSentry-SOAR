@@ -24,6 +24,9 @@ Las pruebas de integración y respuesta activa se están desarrollando sobre un 
 * **Contención Dinámica en Firewall:** Integración vía API REST para inyectar *Address Objects* en Blacklists. Bloqueo autónomo del perímetro ante intentos de intrusión externa.
 * **Deduplicación de Estado:** El motor analiza el estado de la red antes de actuar, ignorando alertas concurrentes si la IP ya está bloqueada, protegiendo al Firewall de ataques de denegación de servicio (DoS) internos.
 
+![Bloqueo Dinámico FortiGate](images/fortigate.png)
+*Inyección dinámica de atacantes en el Address Group de bloqueo del firewall perimetral.*
+
 **💻 Seguridad de Endpoints (Wazuh EDR & Windows)**
 * **Aislamiento de Red con "Lifeline":** Ante comportamientos Zero-Day, se despliegan scripts en PowerShell que reconfiguran el Firewall de Windows aislando el host, pero manteniendo un túnel WinRM/API abierto hacia la IP del SOC para preservar la telemetría y respuesta remota.
 * **Terminación de Procesos en Memoria:** Interrupción en tiempo real de binarios maliciosos (kill process) a nivel de SO tras confirmar un IoC.
@@ -42,6 +45,8 @@ Las pruebas de integración y respuesta activa se están desarrollando sobre un 
 * **Motor de Playbooks YAML Desacoplado:** Arquitectura "codeless" para el analista L1. Las reglas de respuesta se definen modificando simples archivos de texto.
 * **ChatOps (Human-in-the-loop):** Integración con Telegram para notificaciones ricas y solicitud de autorización en acciones críticas.
 
+![Playbook YAML](images/playbook.png)
+*Ejemplo de Playbook YAML para contención autónoma de Ransomware.*
 
 ## 🚀 Pruebas de Concepto (PoC) Exitosas
 - [x] Bloqueo perimetral automático (FortiGate) de atacantes externos simulando fuerza bruta SSH.
