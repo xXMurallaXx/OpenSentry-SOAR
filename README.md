@@ -26,11 +26,13 @@ Las pruebas de integración y respuesta activa se están desarrollando sobre un 
 4.  **Case Management & Ticketing:** Dashboard web en tiempo real para visualizar incidentes, métricas CTI y liberar cuarentenas con un solo clic.
 5.  **ChatOps y Human-in-the-Loop:** Integración bidireccional con un Bot de Telegram. El SOAR notifica bloqueos autónomos y solicita autorización humana para comportamientos dudosos.
 6.  **Pipeline Anti-Phishing (En memoria):** Extracción de IOCs (URLs y Hashes) de buzones de reporte trabajando directamente en memoria RAM para evitar infecciones del propio sistema.
+7. **Cyber Deception & Active Defense (Honeytokens):** Implementación de una capa de engaño mediante archivos señuelo estratégicamente situados en Windows Server 2022. La telemetría se basa en la auditoría avanzada de objetos del SO (SACLs), permitiendo al SOAR detectar y aislar intrusos en fases tempranas de reconocimiento (Táctica MITRE Discovery).
 
 ## 🚀 Pruebas de Concepto (PoC) Exitosas
 - [x] Intercepción de ataque Ransomware simulado (borrado de *Shadow Copies* vía `vssadmin`).
 - [x] Ejecución de script de cuarentena PowerShell a través del agente EDR.
 - [x] Corte total de conectividad de red del atacante manteniendo la telemetría viva con el SIEM.
+- [x] Despliegue de Honeytokens con monitorización FIM y auditoría de acceso a objetos en Windows.
 
 ![Terminal Containment](images/consola.png)
 
